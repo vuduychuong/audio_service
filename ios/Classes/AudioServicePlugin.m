@@ -1,20 +1,53 @@
 #import "AudioServicePlugin.h"
+#import "AudioBackgroundServicePlugin.h"
 
 @implementation AudioServicePlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  FlutterMethodChannel* channel = [FlutterMethodChannel
-      methodChannelWithName:@"audio_service"
-            binaryMessenger:[registrar messenger]];
-  AudioServicePlugin* instance = [[AudioServicePlugin alloc] init];
-  [registrar addMethodCallDelegate:instance channel:channel];
+    FlutterMethodChannel* channel = [FlutterMethodChannel
+                                     methodChannelWithName:@"ryanheise.com/audioService"
+                                     binaryMessenger:[registrar messenger]];
+    AudioServicePlugin* instance = [[AudioServicePlugin alloc] init];
+    [registrar addMethodCallDelegate:instance channel:channel];
+    
+    FlutterMethodChannel* channelBackground = [FlutterMethodChannel
+                                               methodChannelWithName:@"ryanheise.com/audioServiceBackground"
+                                               binaryMessenger:[registrar messenger]];
+     AudioBackgroundServicePlugin* instanceBackground = [[AudioBackgroundServicePlugin alloc] init];
+    [registrar addMethodCallDelegate:instanceBackground channel:channelBackground];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-  if ([@"getPlatformVersion" isEqualToString:call.method]) {
-    result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
-  } else {
-    result(FlutterMethodNotImplemented);
-  }
+    if ([@"getPlatformVersion" isEqualToString:call.method]) {
+        result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
+    } else if ([@"connect" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"start" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"play" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"pause" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"stop" isEqualToString:call.method]) {
+        result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
+    } else if ([@"setState" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"seekTo" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"skipToNext" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"skipToPrevious" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"isRunning" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"disconnect" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"prepare" isEqualToString:call.method]) {
+        result(nil);
+    } else if ([@"ready" isEqualToString:call.method]) {
+        result(nil);
+    } else {
+        result(FlutterMethodNotImplemented);
+    }
 }
 
 @end

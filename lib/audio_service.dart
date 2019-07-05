@@ -386,6 +386,8 @@ class AudioService {
           break;
         case 'onPlaybackStateChanged':
           final List args = call.arguments;
+          print('onPlaybackStateChanged');
+          print(args);
           int actionBits = args[1];
           _playbackState = PlaybackState(
             basicState: BasicPlaybackState.values[args[0]],
@@ -466,12 +468,15 @@ class AudioService {
     bool shouldPreloadArtwork = false,
     bool enableQueue = false,
   }) async {
+    print('audio_service: start');
     final ui.CallbackHandle handle =
         ui.PluginUtilities.getCallbackHandle(backgroundTaskEntrypoint);
     if (handle == null) {
+      print('audio_service: handle null');
       return false;
     }
     var callbackHandle = handle.toRawHandle();
+    print(callbackHandle);
     return await _channel.invokeMethod('start', {
       'callbackHandle': callbackHandle,
       'androidNotificationChannelName': androidNotificationChannelName,
