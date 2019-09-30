@@ -6,6 +6,9 @@
 pubspec.lock
 
 build/
+example/android/**
+android/**
+.idea/**
 
 doc/
 **/ios/Flutter/flutter_export_environment.sh

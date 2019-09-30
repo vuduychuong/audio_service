@@ -9,6 +9,7 @@ import android.media.AudioTrack;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import androidx.media.MediaBrowserServiceCompat;
@@ -165,6 +166,11 @@ public class AudioServicePlugin {
 		public void onMethodCall(MethodCall call, final Result result) {
 			Context context = registrar.activeContext();
 			FlutterApplication application = (FlutterApplication)context.getApplicationContext();
+			Log.d(this.getClass().getSimpleName(), "----Start method----");
+			Log.d(this.getClass().getSimpleName(), call.method);
+			if (null != call.arguments) {
+				Log.d(this.getClass().getSimpleName(), call.arguments.toString());
+			}
 			switch (call.method) {
 			case "isRunning":
 				result.success(AudioService.isRunning());
@@ -535,6 +541,11 @@ public class AudioServicePlugin {
 		public void onMethodCall(MethodCall call, Result result) {
 			Context context = registrar.activeContext();
 			FlutterApplication application = (FlutterApplication)context.getApplicationContext();
+			Log.d(this.getClass().getSimpleName(), "----Start method----");
+			Log.d(this.getClass().getSimpleName(), call.method);
+			if (null != call.arguments) {
+				Log.d(this.getClass().getSimpleName(), call.arguments.toString());
+			}
 			switch (call.method) {
 			case "ready":
 				result.success(true);
