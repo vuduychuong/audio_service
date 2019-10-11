@@ -9,6 +9,7 @@ import android.media.AudioTrack;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import androidx.media.MediaBrowserServiceCompat;
@@ -165,6 +166,11 @@ public class AudioServicePlugin {
 		public void onMethodCall(MethodCall call, final Result result) {
 			Context context = registrar.activeContext();
 			FlutterApplication application = (FlutterApplication)context.getApplicationContext();
+			Log.d(this.getClass().getSimpleName(), "----Start method----");
+			Log.d(this.getClass().getSimpleName(), call.method);
+			if (null != call.arguments) {
+				Log.d(this.getClass().getSimpleName(), call.arguments.toString());
+			}
 			switch (call.method) {
 			case "isRunning":
 				result.success(AudioService.isRunning());
@@ -185,6 +191,7 @@ public class AudioServicePlugin {
 				Integer notificationColor = arguments.get("notificationColor") == null ? null : getInt(arguments.get("notificationColor"));
 				String androidNotificationIcon = (String)arguments.get("androidNotificationIcon");
 				boolean shouldPreloadArtwork = (Boolean)arguments.get("shouldPreloadArtwork");
+				final boolean enableQueue = (Boolean)arguments.get("enableQueue");
 
 				final String appBundlePath = FlutterMain.findAppBundlePath(application);
 				Activity activity = application.getCurrentActivity();
@@ -264,6 +271,8 @@ public class AudioServicePlugin {
 								sendStartResult(false);
 								throw new IllegalStateException("No pluginRegistrantCallback has been set. Make sure you call AudioServicePlugin.setPluginRegistrantCallback(this) from your application's onCreate.");
 							}
+							if (enableQueue)
+								AudioService.instance.enableQueue();
 							pluginRegistrantCallback.registerWith(backgroundFlutterView.getPluginRegistry());
 							FlutterRunArguments args = new FlutterRunArguments();
 							args.bundlePath = appBundlePath;
@@ -532,11 +541,13 @@ public class AudioServicePlugin {
 		public void onMethodCall(MethodCall call, Result result) {
 			Context context = registrar.activeContext();
 			FlutterApplication application = (FlutterApplication)context.getApplicationContext();
+			Log.d(this.getClass().getSimpleName(), "----Start method----");
+			Log.d(this.getClass().getSimpleName(), call.method);
+			if (null != call.arguments) {
+				Log.d(this.getClass().getSimpleName(), call.arguments.toString());
+			}
 			switch (call.method) {
 			case "ready":
-				boolean enableQueue = (Boolean)call.arguments;
-				if (enableQueue)
-					AudioService.instance.enableQueue();
 				result.success(true);
 				sendStartResult(true);
 				// If the client subscribed to browse children before we

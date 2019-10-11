@@ -69,38 +69,44 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: const Text('Audio Service Demo'),
-        ),
-        body: new Center(
-          child: StreamBuilder(
-            stream: AudioService.playbackStateStream,
-            builder: (context, snapshot) {
-              PlaybackState state = snapshot.data;
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (state?.basicState == BasicPlaybackState.connecting) ...[
-                    stopButton(),
-                    Text("Connecting..."),
-                  ] else
-                    if (state?.basicState == BasicPlaybackState.playing) ...[
+      home: WillPopScope(
+        onWillPop: () {
+          disconnect();
+          return Future.value(true);
+        },
+        child: new Scaffold(
+          appBar: new AppBar(
+            title: const Text('Audio Service Demo'),
+          ),
+          body: new Center(
+            child: StreamBuilder(
+              stream: AudioService.playbackStateStream,
+              builder: (context, snapshot) {
+                PlaybackState state = snapshot.data;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (state?.basicState == BasicPlaybackState.connecting) ...[
+                      stopButton(),
+                      Text("Connecting..."),
+                    ] else if (state?.basicState ==
+                        BasicPlaybackState.playing) ...[
                       pauseButton(),
                       stopButton(),
                       positionIndicator(state),
-                    ] else
-                      if (state?.basicState == BasicPlaybackState.paused) ...[
-                        playButton(),
-                        stopButton(),
-                        positionIndicator(state),
-                      ] else ...[
-                        audioPlayerButton(),
-                        textToSpeechButton(),
-                      ],
-                ],
-              );
-            },
+                    ] else if (state?.basicState ==
+                        BasicPlaybackState.paused) ...[
+                      playButton(),
+                      stopButton(),
+                      positionIndicator(state),
+                    ] else ...[
+                      audioPlayerButton(),
+                      textToSpeechButton(),
+                    ],
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -108,17 +114,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   RaisedButton audioPlayerButton() =>
-      startButton('AudioPlayer', _backgroundAudioPlayerTask);
+      startButton('AudioPlayer', _audioPlayerTaskEntrypoint);
 
   RaisedButton textToSpeechButton() =>
-      startButton('TextToSpeech', _backgroundTextToSpeechTask);
+      startButton('TextToSpeech', _textToSpeechTaskEntrypoint);
 
-  RaisedButton startButton(String label, Function backgroundTask) =>
+  RaisedButton startButton(String label, Function entrypoint) =>
       RaisedButton(
         child: Text(label),
         onPressed: () {
           AudioService.start(
-            backgroundTask: backgroundTask,
+            backgroundTaskEntrypoint: entrypoint,
             resumeOnClick: true,
             androidNotificationChannelName: 'Audio Service Demo',
             notificationColor: 0xFF2196f3,
@@ -152,25 +158,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       );
 }
 
-void _backgroundAudioPlayerTask() async {
-  CustomAudioPlayer player = CustomAudioPlayer();
-  AudioServiceBackground.run(
-    onStart: player.run,
-    onPlay: player.play,
-    onPause: player.pause,
-    onStop: player.stop,
-    onClick: (MediaButton button) => player.playPause(),
-  );
+void _audioPlayerTaskEntrypoint() async {
+  AudioServiceBackground.run(() => CustomAudioPlayer());
 }
 
-class CustomAudioPlayer {
+class CustomAudioPlayer extends BackgroundAudioTask {
   static const streamUri =
-      'http://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3';
+      'https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3';
   AudioPlayer _audioPlayer = new AudioPlayer();
   Completer _completer = Completer();
   int _position;
 
-  Future<void> run() async {
+  @override
+  Future<void> onStart() async {
     MediaItem mediaItem = MediaItem(
         id: 'audio_1',
         album: 'Sample Album',
@@ -182,7 +182,7 @@ class CustomAudioPlayer {
     var playerStateSubscription = _audioPlayer.onPlayerStateChanged
         .where((state) => state == AudioPlayerState.COMPLETED)
         .listen((state) {
-      stop();
+      onStop();
     });
     var audioPositionSubscription =
         _audioPlayer.onAudioPositionChanged.listen((when) {
@@ -195,7 +195,7 @@ class CustomAudioPlayer {
         _setPlayingState();
       }
     });
-    play();
+    onPlay();
     await _completer.future;
     playerStateSubscription.cancel();
     audioPositionSubscription.cancel();
@@ -211,12 +211,13 @@ class CustomAudioPlayer {
 
   void playPause() {
     if (AudioServiceBackground.state.basicState == BasicPlaybackState.playing)
-      pause();
+      onPause();
     else
-      play();
+      onPlay();
   }
 
-  void play() {
+  @override
+  void onPlay() {
     _audioPlayer.play(streamUri);
     if (_position == null) {
       // There may be a delay while the AudioPlayer plugin connects.
@@ -231,7 +232,8 @@ class CustomAudioPlayer {
     }
   }
 
-  void pause() {
+  @override
+  void onPause() {
     _audioPlayer.pause();
     AudioServiceBackground.setState(
       controls: [playControl, stopControl],
@@ -240,7 +242,8 @@ class CustomAudioPlayer {
     );
   }
 
-  void stop() {
+  @override
+  void onStop() {
     _audioPlayer.stop();
     AudioServiceBackground.setState(
       controls: [],
@@ -250,18 +253,11 @@ class CustomAudioPlayer {
   }
 }
 
-void _backgroundTextToSpeechTask() async {
-  TextPlayer textPlayer = TextPlayer();
-  AudioServiceBackground.run(
-    onStart: textPlayer.run,
-    onPlay: textPlayer.playPause,
-    onPause: textPlayer.playPause,
-    onStop: textPlayer.stop,
-    onClick: (MediaButton button) => textPlayer.playPause(),
-  );
+void _textToSpeechTaskEntrypoint() async {
+  AudioServiceBackground.run(() => TextPlayer());
 }
 
-class TextPlayer {
+class TextPlayer extends BackgroundAudioTask {
   FlutterTts _tts = FlutterTts();
 
   /// Represents the completion of a period of playing or pausing.
@@ -276,7 +272,8 @@ class TextPlayer {
 
   BasicPlaybackState get _basicState => AudioServiceBackground.state.basicState;
 
-  Future<void> run() async {
+  @override
+  Future<void> onStart() async {
     playPause();
     for (var i = 1; i <= 10 && _basicState != BasicPlaybackState.stopped; i++) {
       AudioServiceBackground.setMediaItem(mediaItem(i));
@@ -292,7 +289,7 @@ class TextPlayer {
         await _playPauseFuture();
       }
     }
-    if (_basicState != BasicPlaybackState.stopped) stop();
+    if (_basicState != BasicPlaybackState.stopped) onStop();
   }
 
   MediaItem mediaItem(int number) => MediaItem(
@@ -317,7 +314,8 @@ class TextPlayer {
     _playPauseCompleter.complete();
   }
 
-  void stop() {
+  @override
+  void onStop() {
     if (_basicState == BasicPlaybackState.stopped) return;
     _tts.stop();
     AudioServiceBackground.setState(
