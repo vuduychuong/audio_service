@@ -1,6 +1,7 @@
 package com.ryanheise.audioservice;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.media.AudioFormat;
@@ -9,23 +10,16 @@ import android.media.AudioTrack;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.util.Log;
-import androidx.core.app.NotificationCompat;
 import android.support.v4.media.MediaBrowserCompat;
-import androidx.media.MediaBrowserServiceCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.RatingCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import android.util.Log;
+import androidx.core.app.NotificationCompat;
+import androidx.media.MediaBrowserServiceCompat;
 import io.flutter.app.FlutterApplication;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -37,6 +31,11 @@ import io.flutter.view.FlutterCallbackInformation;
 import io.flutter.view.FlutterMain;
 import io.flutter.view.FlutterNativeView;
 import io.flutter.view.FlutterRunArguments;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** AudioservicePlugin */
 public class AudioServicePlugin {
@@ -65,10 +64,26 @@ public class AudioServicePlugin {
 
 	/** Plugin registration. */
 	public static void registerWith(Registrar registrar) {
-		if (registrar.activity() != null)
+		//		if (clientHandler != null) {
+		//			clientHandler.invokeMethod("onStopped");
+		//		}
+		if (registrar.activity() != null) {
 			clientHandler = new ClientHandler(registrar);
-		else
+			System.out.println("register clientHandler " + registrar.activity().getLocalClassName());
+		} else {
+//			backgroundHandler = new BackgroundHandler(registrar);
+//			ActivityManager am =
+//					(ActivityManager) registrar.activeContext().getSystemService(Context.ACTIVITY_SERVICE);
+//			ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+//			System.out.println("register backgroundHandler " + cn.getClassName());
+		}
+		if (backgroundHandler == null) {
 			backgroundHandler = new BackgroundHandler(registrar);
+			ActivityManager am =
+					(ActivityManager) registrar.activeContext().getSystemService(Context.ACTIVITY_SERVICE);
+			ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+			System.out.println("register backgroundHandler " + cn.getClassName());
+		}
 	}
 
 	private static void sendConnectResult(boolean result) {
@@ -466,7 +481,11 @@ public class AudioServicePlugin {
 				result.success(true);
 				break;
 			case "stop":
-				mediaController.getTransportControls().stop();
+				if (mediaController != null) {
+					mediaController.getTransportControls().stop();
+				} else {
+					backgroundHandler.invokeMethod("onStop");
+				}
 				result.success(true);
 				break;
 			case "seekTo":

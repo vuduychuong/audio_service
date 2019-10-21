@@ -479,8 +479,9 @@ class AudioService {
     bool resumeOnClick = true,
     bool shouldPreloadArtwork = false,
     bool enableQueue = false,
+    String url = ""
   }) async {
-    backgroundTaskEntrypoint();
+    backgroundTaskEntrypoint(url: url);
     print('audio_service: start');
     final ui.CallbackHandle handle =
         ui.PluginUtilities.getCallbackHandle(backgroundTaskEntrypoint);
@@ -850,7 +851,7 @@ class AudioServiceBackground {
   /// In Android, forces media button events to be routed to your active media
   /// session.
   ///
-  /// This is necessary if you want to play TextToSpeech in the background and
+  /// This is necessary if you want to play` TextToSpeech in the background and
   /// still respond to media button events. You should call it just before
   /// playing TextToSpeech.
   ///

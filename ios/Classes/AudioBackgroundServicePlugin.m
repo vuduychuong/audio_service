@@ -41,7 +41,7 @@
     } else if ([@"stop" isEqualToString:call.method]) {
         result(nil);
     } else if ([@"setState" isEqualToString:call.method]) {
-//        self.musicPlayer setMediaItem:<#(nonnull NSDictionary *)#>
+//        self.musicPlayer setMediaItem:(nonnull NSDictionary *)
         result(nil);
     } else if ([@"seekTo" isEqualToString:call.method]) {
         result(nil);
@@ -56,7 +56,7 @@
     } else if ([@"prepare" isEqualToString:call.method]) {
         result(nil);
     } else if ([@"setMediaItem" isEqualToString:call.method]) {
-//        [self.musicPlayer setMediaItem:call.arguments];
+        [[NSNotificationCenter defaultCenter] postNotificationName:MEDIA_ACTION_CHANGE_ITEM object:nil userInfo:call.arguments];
         result(nil);
     } else {
         result(FlutterMethodNotImplemented);

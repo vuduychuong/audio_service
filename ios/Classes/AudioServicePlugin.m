@@ -67,7 +67,7 @@ FlutterMethodChannel *_channelAudioService;
     } else if ([@"ready" isEqualToString:call.method]) {
         result(nil);
     } else if ([@"changeMediaItem" isEqualToString:call.method]) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:MEDIA_ACTION_CHANGE object:nil userInfo:call.arguments];
+        [[NSNotificationCenter defaultCenter] postNotificationName:MEDIA_ACTION_CHANGE_ITEM object:nil userInfo:call.arguments];
         result(nil);
     } else {
         result(FlutterMethodNotImplemented);

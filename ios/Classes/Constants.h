@@ -15,6 +15,6 @@ extern NSString *_Nonnull const MEDIA_ACTION_CHANGE_STATE;
 extern NSString *_Nonnull const MEDIA_ACTION_PLAY;
 extern NSString *_Nonnull const MEDIA_ACTION_PAUSE;
 extern NSString *_Nonnull const MEDIA_ACTION_STOP;
-extern NSString *_Nonnull const MEDIA_ACTION_CHANGE;
+extern NSString *_Nonnull const MEDIA_ACTION_CHANGE_ITEM;
 
 NS_ASSUME_NONNULL_END
