@@ -158,7 +158,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       );
 }
 
-void _audioPlayerTaskEntrypoint() async {
+void _audioPlayerTaskEntrypoint({String url = ""}) async {
   AudioServiceBackground.run(() => CustomAudioPlayer());
 }
 
