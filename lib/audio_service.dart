@@ -440,7 +440,7 @@ class AudioService {
   ///
   /// This method should be called when the UI is no longer visible.
   static Future<void> disconnect() async {
-    _channel.setMethodCallHandler(null);
+//    _channel.setMethodCallHandler(null);
     await _channel.invokeMethod("disconnect");
   }
 
@@ -777,7 +777,7 @@ class AudioServiceBackground {
     await task.onStart();
     print('AudioServiceBackground send method: stopped');
     await _backgroundChannel.invokeMethod('stopped');
-    _backgroundChannel.setMethodCallHandler(null);
+//    _backgroundChannel.setMethodCallHandler(null);
     _state = _noneState;
   }
 

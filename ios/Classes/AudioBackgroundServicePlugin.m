@@ -25,9 +25,6 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSLog(@"AudioBackgroundService method : %@, args: %@", call.method, call.arguments);
-//    if (!self.musicPlayer) {
-//        self.musicPlayer = [AudioPlayerNotification sharedInstance];
-//    }
     if ([@"getPlatformVersion" isEqualToString:call.method]) {
         result([@"ready" stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
     } else if ([@"ready" isEqualToString:call.method]) {
