@@ -2,8 +2,11 @@ package com.ryanheise.audioservice;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -19,6 +22,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.media.MediaBrowserServiceCompat;
 import io.flutter.app.FlutterApplication;
 import io.flutter.plugin.common.MethodCall;
@@ -69,6 +73,18 @@ public class AudioServicePlugin {
 		//		}
 		if (registrar.activity() != null) {
 			clientHandler = new ClientHandler(registrar);
+			LocalBroadcastManager.getInstance(registrar.context()).registerReceiver(new BroadcastReceiver() {
+				@Override
+				public void onReceive(Context context, Intent intent) {
+					if (clientHandler != null && clientHandler.mediaController != null) {
+						clientHandler.mediaController.getTransportControls().stop();
+					} else {
+						if (backgroundHandler != null) {
+							backgroundHandler.invokeMethod("onStop");
+						}
+					}
+				}
+			}, new IntentFilter("ACTION_STOP"));
 			System.out.println("register clientHandler " + registrar.activity().getLocalClassName());
 		} else {
 //			backgroundHandler = new BackgroundHandler(registrar);
